@@ -1,6 +1,6 @@
 // MITRE Technique: https://attack.mitre.org/techniques/T1222/ 
 // MITRO Tactic:  Defense Evasion
-// This is a sample comment
+// This is a sample 
 SecurityEvent
 | where EventID == "4670"
 | where ParentProcessFileName IN ("icacls.exe", "takedown.exe", "attrib.exe") 
