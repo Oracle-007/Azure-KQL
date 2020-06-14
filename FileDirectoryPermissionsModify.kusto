@@ -1,8 +1,21 @@
+// Alert Name: File or Folder Permission Modification
+// Alert Description: Monitor and investigate attempts to modify DACLs and file/directory ownership
 // MITRE Technique: https://attack.mitre.org/techniques/T1222/ 
-// MITRO Tactic:  Defense Evasion
-// This is a sample 
+// MITRE Tactic:  Defense Evasion
+// Author = Meena
+// Copyright = Copyright 2020, meenalive.com
+// Version = 0.0.1
+// Email = writetome@meenalive.com
+// Status = Production
 SecurityEvent
-| where EventID == "4670"
-| where ParentProcessFileName IN ("icacls.exe", "takedown.exe", "attrib.exe") 
-or ParentProcessCommandline contains "grant"
-| project ComputerName, UserName, IPAddress
+| where EventID == "4670" 
+// Removing computer accounts to avoid false positives
+| where SubjectUserName !endswith "$"
+// Extracting the proces name using regex
+| extend ParentProcessFileName = extract(@"\\(.[^\\]+\..[^\\]+)",1,ProcessName)
+// Looking for the suspected process name as specified in MITRE Technique's detection
+| where ParentProcessFileName in ("icacls.exe", "takedown.exe", "attrib.exe")
+or CommandLine contains "grant"
+// Use project or summarize depending on your detection need
+//| project TimeGenerated, SubjectUserName, SubjectDomainName, SourceComputerId, ObjectName, ObjectServer, ObjectType, ObjectValueName
+| summarize min(TimeGenerated), makeset(ProcessName), makeset(ParentProcessFileName), make_set(SubjectDomainName), makeset(SourceComputerId), makeset(ObjectName), makeset(ObjectType), makeset(ObjectValueName) by SubjectUserName
