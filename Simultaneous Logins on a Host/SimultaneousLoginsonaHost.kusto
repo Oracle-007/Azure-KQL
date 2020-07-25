@@ -1,0 +1,21 @@
+// Alert Name: Remote Services: Simultaneous Logins on a Host
+// Alert Description: Multiple users logged into a single machine at the same time, or even within the same hour.
+// MITRE Technique: https://attack.mitre.org/tactics/TA0001/ 
+// MITRE Tactic:  Initial Access
+// Author = Meena
+// Copyright = Copyright 2020, meenalive.com
+// Version = 1.0
+// Email = writetome@meenalive.com
+// Status = Development
+// Use a table that contains registry logs or use Sysmon
+SecurityEvent
+// Use logon events according your network configs. I used the windows logon.
+| where EventID == '4624'
+// Monitoring Interactive, Network, NewCredentials, RemoteInteractive
+| where LogonType in (2,3,9,10)
+// Excluding the computer accounts
+| where Account !endswith "$"
+// Grouping by IPAddress, getting max and min time generated and counting distinct users. 
+| summarize earliest_time = min(TimeGenerated), latest_Time = max(TimeGenerated), UserCount = dcount(TargetUserName), Users = make_set(TargetUserName) by IpAddress
+// Condition to calculate multiple user logons in a hour
+| where latest_Time - earliest_time <= 1h and UserCount > 1 
