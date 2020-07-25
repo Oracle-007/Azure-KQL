@@ -6,8 +6,7 @@
 // Copyright = Copyright 2020, meenalive.com
 // Version = 1.0
 // Email = writetome@meenalive.com
-// Status = Development
-// Use a table that contains registry logs or use Sysmon
+// Status = Production
 SecurityEvent
 // Use logon events according your network configs. I used the windows logon.
 | where EventID == '4624'
