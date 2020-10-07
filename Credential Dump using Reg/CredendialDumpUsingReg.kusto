@@ -1,0 +1,14 @@
+// Alert Name: Attempted Credential Dump From Registry Via Reg.exe
+// Alert Description: This search looks for execution of reg.exe with parameters specifying an export of keys that contain hashed credentials that attackers may try to crack offline.
+// MITRE Technique: https://attack.mitre.org/techniques/T1003/ 
+// MITRE Tactic:  OS Credential Dumping
+// Author = Meena
+// Copyright = Copyright 2020, meenalive.com
+// Version = 1.0
+// Email = writetome@meenalive.com
+// Status = Production
+// This rule is set to work in Microsoft Windows Defender, searching in the relavent tables
+search in (DeviceEvents, DeviceProcessEvents, DeviceRegistryEvents, DeviceFileEvents, DeviceNetworkEvents, DeviceNetworkInfo, DeviceImageLoadEvents, DeviceLogonEvents)
+InitiatingProcessFileName == "reg.exe" and InitiatingProcessCommandLine contains "save"
+| where InitiatingProcessCommandLine contains @"HKLM\\sam" or InitiatingProcessCommandLine contains @"HKLM\\system"
+| summarize count(), Latesttime = max(Timestamp), FirstTime = min(Timestamp) by DeviceName, InitiatingProcessAccountName, InitiatingProcessAccountDomain, InitiatingProcessFileName, InitiatingProcessFolderPath, InitiatingProcessCommandLine
