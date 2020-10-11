@@ -1,0 +1,14 @@
+// Alert Name: Batch File Write to System32
+// Alert Description: The search looks for a batch file (.bat) written to the Windows system directory tree.
+// MITRE Technique: https://attack.mitre.org/software/S0370/
+// MITRE Tactic:  Execution
+// Author = Meena
+// Copyright = Copyright 2020, meenalive.com
+// Version = 1.0
+// Email = writetome@meenalive.com
+// Status = Production
+search in (DeviceEvents, DeviceProcessEvents, DeviceRegistryEvents, DeviceFileEvents, DeviceNetworkEvents, DeviceNetworkInfo
+, DeviceImageLoadEvents, DeviceLogonEvents)
+InitiatingProcessFolderPath contains @"\system32\"
+| where InitiatingProcessFolderPath endswith ".bat"
+| summarize count(), Latesttime = max(Timestamp), FirstTime = min(Timestamp) by DeviceName, InitiatingProcessAccountName, InitiatingProcessFileName, InitiatingProcessFolderPath
